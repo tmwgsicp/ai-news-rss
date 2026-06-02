@@ -8,7 +8,7 @@ import asyncio
 import httpx
 
 from .base import BaseScraper
-from models.horizon_models import ContentItem, SourceType, HackerNewsConfig
+from models.content_models import ContentItem, SourceType, HackerNewsConfig
 
 logger = logging.getLogger(__name__)
 

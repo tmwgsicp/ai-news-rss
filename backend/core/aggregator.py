@@ -24,7 +24,7 @@ from core.ai.analyzer import ContentAnalyzer
 from core.config import load_sources_config, get_score_threshold
 
 # 数据模型
-from models.horizon_models import (
+from models.content_models import (
     ContentItem, HackerNewsConfig, RedditConfig, RSSSourceConfig,
     RedditSubredditConfig, SourceType
 )

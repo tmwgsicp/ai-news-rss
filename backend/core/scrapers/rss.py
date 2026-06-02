@@ -11,7 +11,7 @@ import httpx
 import feedparser
 
 from .base import BaseScraper
-from models.horizon_models import ContentItem, SourceType, RSSSourceConfig
+from models.content_models import ContentItem, SourceType, RSSSourceConfig
 
 logger = logging.getLogger(__name__)
 

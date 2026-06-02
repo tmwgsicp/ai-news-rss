@@ -1,6 +1,6 @@
 """
-Scrapers 模块
-从 Horizon 复制的抓取器
+Scrapers module.
+新闻源抓取器模块。
 """
 
 from .base import BaseScraper

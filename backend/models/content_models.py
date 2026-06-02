@@ -1,5 +1,6 @@
 """
-Horizon 数据模型（简化版，仅用于本项目）
+Content data models for news aggregation.
+新闻聚合内容数据模型。
 """
 
 from enum import Enum

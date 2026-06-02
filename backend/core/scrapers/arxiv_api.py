@@ -9,7 +9,7 @@ from typing import List, Optional
 import httpx
 
 from .base import BaseScraper
-from models.horizon_models import ContentItem, SourceType
+from models.content_models import ContentItem, SourceType
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .client import GLMClient
 from .prompts import CONTENT_ANALYSIS_SYSTEM, CONTENT_ANALYSIS_USER
-from models.horizon_models import ContentItem
+from models.content_models import ContentItem
 from models.ai_news import TOPICS
 
 logger = logging.getLogger(__name__)

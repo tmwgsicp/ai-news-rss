@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 import httpx
 
-from models.horizon_models import ContentItem
+from models.content_models import ContentItem
 
 
 class BaseScraper(ABC):
