@@ -59,7 +59,7 @@ jobs:
             --tag ${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
             --tag ${{ env.IMAGE_NAME }}:latest \
             --load \
-            -f Dockerfile.prod \
+            -f Dockerfile \
             .
           docker save ${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
             -o ai-news-rss-${VERSION}-amd64.tar
@@ -74,7 +74,7 @@ jobs:
             --platform linux/arm64 \
             --tag ${{ env.IMAGE_NAME }}:${VERSION}-arm64 \
             --load \
-            -f Dockerfile.prod \
+            -f Dockerfile \
             .
           docker save ${{ env.IMAGE_NAME }}:${VERSION}-arm64 \
             -o ai-news-rss-${VERSION}-arm64.tar
