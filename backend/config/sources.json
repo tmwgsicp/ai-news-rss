@@ -1,0 +1,224 @@
+{
+  "version": "1.0.0",
+  "description": "AI NewsRSS MVP 配置 - 仅包含已验证可用的信息源",
+  "last_updated": "2026-03-07",
+  
+  "ai": {
+    "provider": "zhipu",
+    "model": "glm-4-flashx",
+    "api_key_env": "GLM_API_KEY",
+    "temperature": 0.3,
+    "max_tokens": 2000,
+    "base_threshold": 7.0,
+    "use_batch_api": false,
+    "batch_model": "glm-4-flash"
+  },
+
+  "rss_sources": [
+    {
+      "name": "OpenAI Research",
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/refs/heads/main/feeds/feed_openai_research.xml",
+      "enabled": true,
+      "category": "deep_read",
+      "description": "OpenAI 研究博客 - 前沿AI研究成果（社区维护RSS）"
+    },
+    {
+      "name": "Anthropic News",
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/refs/heads/main/feeds/feed_anthropic_news.xml",
+      "enabled": true,
+      "category": "daily_brief",
+      "description": "Anthropic 官方新闻 - 产品发布与公司动态（社区维护RSS）"
+    },
+    {
+      "name": "Anthropic Research",
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/refs/heads/main/feeds/feed_anthropic_research.xml",
+      "enabled": true,
+      "category": "deep_read",
+      "description": "Anthropic 研究博客 - AI安全与对齐研究（社区维护RSS）"
+    },
+    {
+      "name": "Anthropic Engineering",
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml",
+      "enabled": true,
+      "category": "deep_read",
+      "description": "Anthropic 工程博客 - AI Agent/MCP/Claude Code技术实践（社区维护RSS）"
+    },
+    {
+      "name": "Google AI Blog",
+      "url": "https://blog.google/technology/ai/rss/",
+      "enabled": true,
+      "category": "daily_brief",
+      "description": "Google AI 官方博客 - Gemini/Bard等产品与研究动态"
+    },
+    {
+      "name": "DeepMind",
+      "url": "https://deepmind.google/blog/rss.xml",
+      "enabled": true,
+      "category": "deep_read",
+      "description": "DeepMind 研究博客 - AlphaFold/Gemini等前沿研究"
+    },
+    {
+      "name": "Hugging Face",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "enabled": true,
+      "category": "tool_radar",
+      "description": "Hugging Face 官方博客 - 开源模型/数据集/工具发布"
+    },
+    {
+      "name": "MIT Technology Review",
+      "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+      "enabled": true,
+      "category": "industry_pulse",
+      "description": "MIT Technology Review AI 专题 - 行业趋势与深度分析"
+    },
+    {
+      "name": "The Verge AI",
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+      "enabled": true,
+      "category": "industry_pulse",
+      "description": "The Verge AI 专题 - 科技媒体AI产品与行业报道"
+    }
+  ],
+
+  "reddit": {
+    "enabled": false,
+    "api_key_env": "REDDIT_CLIENT_ID",
+    "api_secret_env": "REDDIT_CLIENT_SECRET",
+    "user_agent": "ainewsrss/1.0",
+    "subreddits": [
+      {
+        "name": "MachineLearning",
+        "min_score": 20,
+        "fetch_limit": 15,
+        "category": "deep_read",
+        "description": "机器学习学术社区，论文讨论与研究进展"
+      },
+      {
+        "name": "LocalLLaMA",
+        "min_score": 30,
+        "fetch_limit": 15,
+        "category": "tool_radar",
+        "description": "本地运行大模型社区，开源模型与工具分享"
+      },
+      {
+        "name": "OpenAI",
+        "min_score": 50,
+        "fetch_limit": 15,
+        "category": "community_voice",
+        "description": "OpenAI 相关讨论，产品动态与技术交流"
+      },
+      {
+        "name": "ClaudeAI",
+        "min_score": 20,
+        "fetch_limit": 10,
+        "category": "community_voice",
+        "description": "Claude AI 相关讨论，产品使用与技术交流"
+      },
+      {
+        "name": "artificial",
+        "min_score": 30,
+        "fetch_limit": 10,
+        "category": "community_voice",
+        "description": "通用 AI 讨论社区，行业动态与观点交流"
+      }
+    ],
+    "comment_limit": 3
+  },
+
+  "hackernews": {
+    "enabled": true,
+    "fetch_top_stories": 40,
+    "min_score": 100,
+    "category": "community_voice",
+    "description": "HackerNews Top Stories，技术社区的 AI 相关讨论（AI会根据内容智能分类到各个类别）",
+    "comment_limit": 5
+  },
+
+  "aggregation": {
+    "schedule_hours": 4,
+    "time_window_hours": 24,
+    "deduplication": {
+      "url_similarity_threshold": 0.9,
+      "title_similarity_threshold": 0.85,
+      "semantic_similarity_threshold": 0.92
+    },
+    "retention_days": 30
+  },
+
+  "arxiv_api": {
+    "enabled": true,
+    "categories": ["cs.AI", "cs.CL", "cs.LG"],
+    "max_results": 10,
+    "min_score": 6.5,
+    "category": "deep_read",
+    "description": "arXiv 论文（AI + NLP + ML，48小时，全文评分 >= 6.5）"
+  },
+
+  "github": {
+    "enabled": true,
+    "api_token_env": "GITHUB_ACCESS_TOKEN",
+    "topics": ["machine-learning", "artificial-intelligence", "deep-learning", "llm", "gpt", "transformer"],
+    "languages": ["python", "typescript", "javascript", "rust"],
+    "fetch_limit": 10,
+    "min_stars": 150,
+    "since": "daily",
+    "category": "tool_radar",
+    "description": "GitHub Trending AI/ML 项目（日榜，至少150 stars）"
+  },
+
+  "topics": {
+    "daily_brief": {
+      "name": "每日速览",
+      "name_en": "Daily Brief",
+      "description": "大厂官方动态、重要新闻，10分钟快速了解今日AI",
+      "keywords": ["official", "announcement", "release", "major", "news", "update"],
+      "icon": "⚡",
+      "priority": 1
+    },
+    "tool_radar": {
+      "name": "工具雷达",
+      "name_en": "Tool Radar",
+      "description": "GitHub开源项目、实用工具，发现效率神器",
+      "keywords": ["tool", "library", "framework", "opensource", "github", "project"],
+      "icon": "🔧",
+      "priority": 4
+    },
+    "industry_pulse": {
+      "name": "行业脉搏",
+      "name_en": "Industry Pulse",
+      "description": "融资、政策、市场分析，把握行业方向",
+      "keywords": ["funding", "investment", "policy", "regulation", "market", "business"],
+      "icon": "📈",
+      "priority": 2
+    },
+    "deep_read": {
+      "name": "深度阅读",
+      "name_en": "Deep Read",
+      "description": "研究论文、技术博客、工程实践，深入理解前沿进展",
+      "keywords": ["research", "paper", "technical", "engineering", "tutorial", "deep-dive"],
+      "icon": "📚",
+      "priority": 5
+    },
+    "community_voice": {
+      "name": "社区声音",
+      "name_en": "Community Voice",
+      "description": "HackerNews、Reddit热议，听听同行怎么说",
+      "keywords": ["discussion", "community", "hackernews", "reddit", "forum"],
+      "icon": "💬",
+      "priority": 3
+    }
+  },
+
+  "notes": [
+    "✅ 新分类体系：每日速览、工具雷达、行业脉搏、深度阅读、社区声音",
+    "✅ AI智能分类：同一信息源的内容可以被分类到不同类别（category仅作为提示）",
+    "✅ 官方RSS（11个）：arXiv AI、arXiv ML、OpenAI Research、Anthropic News/Research/Engineering、Google AI、DeepMind、Hugging Face、MIT TR、The Verge AI",
+    "✅ 海外社区（1个）：HackerNews Top Stories",
+    "✅ Reddit（5个）：OpenAI、ClaudeAI、LocalLLaMA、MachineLearning、artificial - 已配置API key",
+    "✅ GitHub Trending（AI/ML主题）：已配置 access token，日榜抓取",
+    "✅ AI分析：智谱 GLM-4-flash（中文输出，严格过滤广告）",
+    "总计：18 个信息源（11个RSS + 1个HackerNews + 5个Reddit + 1个GitHub Trending）",
+    "Olshansk 项目地址：https://github.com/Olshansk/rss-feeds",
+    "更新记录：2026-03-11 移除 VentureBeat AI、xAI News（更新不活跃），新增 Anthropic Engineering"
+  ]
+}

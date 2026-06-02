@@ -1,0 +1,40 @@
+# AI News RSS - 开源版依赖
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy[asyncio]==2.0.23
+aiosqlite==0.19.0
+
+# Configuration
+python-dotenv==1.0.0
+
+# HTTP Client
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Data Processing
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# AI
+zhipuai==2.0.1
+openai>=1.6.0
+tenacity>=8.2.0
+
+# RSS
+feedgen==0.9.0
+feedparser>=6.0.0
+
+# HTML Parsing
+beautifulsoup4>=4.12.0
+
+# TTS (Optional)
+requests==2.31.0
+
+# Utils
+python-dateutil==2.8.2
+pytz==2023.3

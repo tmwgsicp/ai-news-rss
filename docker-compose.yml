@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: ai-news-rss
+    ports:
+      - "8000:8000"
+    environment:
+      # Required: AI Model API Key
+      - GLM_API_KEY=${GLM_API_KEY}
+      - GLM_MODEL=${GLM_MODEL:-glm-4-flashx}
+      - GLM_TEMPERATURE=${GLM_TEMPERATURE:-0.3}
+      
+      # Optional: TTS API Key (for audio generation)
+      - TTS_ENABLED=${TTS_ENABLED:-false}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      
+      # Optional: API tokens
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID:-}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET:-}
+      - GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN:-}
+      
+      # Server config
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=${DEBUG:-false}
+      
+      # Data directory (mounted)
+      - DATA_DIR=/app/data
+      
+    volumes:
+      # Persist database and audio files
+      - ./data:/app/data
+      
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+

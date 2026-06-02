@@ -1,0 +1,233 @@
+name: Daily AI News Aggregation
+
+on:
+  schedule:
+    # 每天 UTC 23:25 运行（北京时间 07:25）
+    - cron: '25 23 * * *'
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: 'Time window in hours (default: 24)'
+        required: false
+        default: '24'
+
+jobs:
+  aggregate-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create data directory
+      run: mkdir -p data/summaries
+    
+    - name: Run news aggregation
+      env:
+        GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+        REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd backend
+        python -c "
+        import asyncio
+        import sys
+        sys.path.insert(0, '.')
+        from core.aggregator import AINewsAggregator
+        from models.database import init_db
+        
+        async def run():
+            await init_db()
+            agg = AINewsAggregator()
+            items = await agg.aggregate_and_save()
+            print(f'Aggregated {len(items)} items')
+        
+        asyncio.run(run())
+        "
+    
+    - name: Generate daily brief
+      run: |
+        cd backend
+        python -c "
+        import asyncio
+        import sys
+        sys.path.insert(0, '.')
+        from core.daily_brief_generator import DailyBriefGenerator
+        
+        async def run():
+            gen = DailyBriefGenerator()
+            brief = await gen.generate_and_save_daily_brief()
+            if brief:
+                print(f'Generated brief for {brief.date}')
+        
+        asyncio.run(run())
+        "
+    
+    - name: Export to HTML
+      run: |
+        cd backend
+        python -c "
+        import asyncio
+        import sys
+        import os
+        from datetime import date
+        sys.path.insert(0, '.')
+        
+        async def export_html():
+            from models.database import async_session
+            from models.daily_brief import DailyBrief
+            from sqlalchemy import select
+            
+            async with async_session() as session:
+                result = await session.execute(
+                    select(DailyBrief).order_by(DailyBrief.date.desc()).limit(1)
+                )
+                brief = result.scalar_one_or_none()
+                
+                if not brief:
+                    print('No brief found')
+                    return
+                
+                # 生成 HTML
+                html = f'''<!DOCTYPE html>
+        <html lang=\"zh-CN\">
+        <head>
+            <meta charset=\"UTF-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <title>AI News Daily Brief - {brief.date}</title>
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    max-width: 900px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    line-height: 1.6;
+                    color: #262626;
+                }}
+                h1 {{ color: #1890ff; }}
+                h2 {{ 
+                    color: #595959;
+                    border-bottom: 2px solid #f0f0f0;
+                    padding-bottom: 8px;
+                }}
+                .news-item {{
+                    margin: 16px 0;
+                    padding: 16px;
+                    background: #fafafa;
+                    border-radius: 8px;
+                }}
+                .news-title {{
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #262626;
+                    margin-bottom: 8px;
+                }}
+                .news-meta {{
+                    font-size: 14px;
+                    color: #8c8c8c;
+                }}
+                .score {{
+                    display: inline-block;
+                    padding: 2px 8px;
+                    background: #1890ff;
+                    color: white;
+                    border-radius: 4px;
+                    font-size: 12px;
+                }}
+                a {{ color: #1890ff; text-decoration: none; }}
+                a:hover {{ text-decoration: underline; }}
+            </style>
+        </head>
+        <body>
+            <h1>{brief.title}</h1>
+            <p><strong>日期</strong>: {brief.date}</p>
+            <p><strong>摘要</strong>: {brief.summary}</p>
+            <hr>
+        '''
+                
+                # 添加每个主题
+                import json
+                sections = json.loads(brief.sections_json) if brief.sections_json else []
+                
+                for sec in sections:
+                    topic_name = sec.get('topic_name', sec.get('name', '未知主题'))
+                    items = sec.get('items', [])
+                    
+                    html += f'<h2>{topic_name}</h2>'
+                    
+                    for item in items:
+                        title = item.get('title', item.get('title_zh', ''))
+                        url = item.get('url', '#')
+                        source = item.get('source', '')
+                        score = item.get('ai_score', 0)
+                        summary = item.get('summary_zh', item.get('summary', ''))
+                        
+                        html += f'''
+            <div class=\"news-item\">
+                <div class=\"news-title\">
+                    <a href=\"{url}\" target=\"_blank\">{title}</a>
+                </div>
+                <div class=\"news-meta\">
+                    <span class=\"score\">{score:.1f}</span>
+                    <span> | {source}</span>
+                </div>
+                <p>{summary}</p>
+            </div>
+                        '''
+                
+                html += '''
+            <hr>
+            <div style=\"text-align: center; padding: 20px; background: #f0f7ff; margin-top: 40px; border-radius: 8px;\">
+                <p style=\"font-size: 16px; margin-bottom: 12px;\"><strong>💡 想要更多功能？</strong></p>
+                <p style=\"color: #595959; line-height: 1.8;\">
+                    当前为开源免费版，仅提供每日静态日报。<br>
+                    如需 <strong>RSS 订阅</strong>（在 RSS 阅读器中自动更新）或 <strong>TTS 语音播报</strong>（通勤收听），<br>
+                    请访问：<a href=\"https://your-saas-domain.com\" style=\"color: #1890ff; font-weight: 600;\">SaaS 完整版</a>
+                </p>
+                <p style=\"font-size: 12px; color: #8c8c8c; margin-top: 8px;\">
+                    开源版 vs SaaS 版功能对比请查看 <a href=\"https://github.com/yourusername/ai-news-rss\">项目文档</a>
+                </p>
+            </div>
+            <p style=\"text-align: center; color: #8c8c8c; margin-top: 20px;\">
+                Generated by <a href=\"https://github.com/yourusername/ai-news-rss\">AI News RSS</a>
+            </p>
+        </body>
+        </html>
+                '''
+                
+                # 保存到 data/summaries/
+                os.makedirs('../data/summaries', exist_ok=True)
+                
+                # 保存为 index.html（最新）
+                with open('../data/summaries/index.html', 'w', encoding='utf-8') as f:
+                    f.write(html)
+                
+                # 保存为带日期的文件
+                with open(f'../data/summaries/{brief.date}.html', 'w', encoding='utf-8') as f:
+                    f.write(html)
+                
+                print(f'Exported to data/summaries/index.html')
+        
+        asyncio.run(export_html())
+        "
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./data/summaries
+        keep_files: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        commit_message: 'Update daily brief'

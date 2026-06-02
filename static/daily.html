@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日日报 - AI NewsRSS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(to bottom, #ffffff, #f9fafb);
+            color: #262626;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #262626;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .logo:hover {
+            color: #1890ff;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #1890ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        
+        nav a {
+            color: #595959;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        nav a:hover,
+        nav a.active {
+            color: #262626;
+            font-weight: 600;
+        }
+        
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #24292e;
+            color: white !important;
+            border-radius: 6px;
+            font-weight: 500 !important;
+            transition: all 0.2s;
+        }
+        
+        .github-link:hover {
+            background: #1b1f23;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .github-link svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .github-link span {
+            font-size: 13px;
+        }
+        
+        /* Page Header */
+        .page-header {
+            padding: 40px 0 24px;
+        }
+        
+        .header-top {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        
+        .page-meta {
+            font-size: 14px;
+            color: #595959;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #096dd9;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #595959;
+            border: 1px solid #d9d9d9;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        
+        /* Audio Player (Enhanced) */
+        .audio-card {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .audio-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .audio-icon {
+            width: 40px;
+            height: 40px;
+            background: #1890ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .audio-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 4px;
+        }
+        
+        .audio-info p {
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .time-display {
+            font-size: 12px;
+            color: #595959;
+            font-family: monospace;
+            min-width: 40px;
+        }
+        
+        .progress-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e5e7eb;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-bar::-webkit-slider-thumb:hover {
+            background: #1d4ed8;
+        }
+        
+        .progress-bar::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-bar::-moz-range-thumb:hover {
+            background: #1d4ed8;
+        }
+        
+        .player-buttons {
+            display: flex;
+            align-items: center;
+            justify-between;
+        }
+        
+        .player-buttons-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn {
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-btn.play-pause {
+            width: 36px;
+            height: 36px;
+        }
+        
+        .control-btn:hover {
+            background: #096dd9;
+        }
+        
+        .control-btn.skip {
+            width: 32px;
+            height: 32px;
+            background: #f5f5f5;
+            color: #595959;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .control-btn.skip:hover {
+            background: #e8e8e8;
+        }
+        
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .speed-label {
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        
+        .speed-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: #f5f5f5;
+            color: #595959;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .speed-btn:hover {
+            background: #e8e8e8;
+        }
+        
+        .speed-btn.active {
+            background: #1890ff;
+            color: white;
+        }
+        
+        /* Summary Card */
+        .summary-card {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .summary-card p {
+            font-size: 14px;
+            color: #262626;
+            line-height: 1.8;
+        }
+        
+        /* Section */
+        .section {
+            margin-bottom: 48px;
+        }
+        
+        .section-header {
+            margin-bottom: 24px;
+        }
+        
+        .section-title-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #262626;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-count {
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        
+        .section-desc {
+            font-size: 14px;
+            color: #595959;
+        }
+        
+        /* News Item */
+        .news-item {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+        
+        .news-item:hover {
+            border-color: #1890ff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-bottom: 12px;
+        }
+        
+        .news-score {
+            color: #1890ff;
+            font-weight: 600;
+        }
+        
+        .news-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .news-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .news-title a:hover {
+            color: #1890ff;
+        }
+        
+        .news-summary {
+            font-size: 14px;
+            color: #595959;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        
+        .news-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .news-link {
+            font-size: 12px;
+            color: #1890ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .news-link:hover {
+            color: #096dd9;
+        }
+        
+        /* Loading & Empty */
+        .loading,
+        .empty {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        
+        .empty-desc {
+            font-size: 14px;
+            color: #8c8c8c;
+        }
+        
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            padding: 32px 0;
+            margin-top: 64px;
+        }
+        
+        .footer-text {
+            text-align: center;
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        
+        .footer-link {
+            color: #1890ff;
+            text-decoration: none;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/home.html" class="logo">
+                <div class="logo-icon">AI</div>
+                AI NewsRSS
+            </a>
+            <nav>
+                <a href="/" class="active">今日日报</a>
+                <a href="/rss.html">RSS 订阅</a>
+                <a href="https://github.com/tmwgsicp/ai-news-rss" target="_blank" class="github-link">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    <span>Star</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <div class="header-top">
+                <div>
+                    <h1 class="page-title" id="brief-title">AI NewsRSS 日报</h1>
+                    <p class="page-meta" id="brief-meta">加载中...</p>
+                </div>
+                <div class="header-actions">
+                    <button onclick="loadDailyBrief()" class="btn btn-primary">刷新</button>
+                </div>
+            </div>
+            
+            <!-- Audio Player -->
+            <div id="audio-container"></div>
+            
+            <!-- Summary -->
+            <div id="summary-container"></div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="font-size: 14px; color: #8c8c8c;">加载中...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty" class="empty" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <h3 class="empty-title">暂无今日资讯</h3>
+            <p class="empty-desc">今天还没有聚合到新资讯，请稍后再试</p>
+        </div>
+
+        <!-- Content Sections -->
+        <div id="content"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-text">
+            <p>&copy; 2026 AI NewsRSS · Powered by <a href="https://github.com/tmwgsicp" target="_blank" class="footer-link">tmwgsicp</a></p>
+        </div>
+    </footer>
+
+    <script>
+        let audioElement = null;
+        let isPlaying = false;
+        let currentTime = 0;
+        let duration = 0;
+        let playbackSpeed = 1.0;
+
+        async function loadDailyBrief() {
+            const loading = document.getElementById('loading');
+            const empty = document.getElementById('empty');
+            const content = document.getElementById('content');
+            const audioContainer = document.getElementById('audio-container');
+            const summaryContainer = document.getElementById('summary-container');
+            
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            content.innerHTML = '';
+            audioContainer.innerHTML = '';
+            summaryContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/daily/latest');
+                if (!response.ok) {
+                    throw new Error('加载失败');
+                }
+                
+                const brief = await response.json();
+                loading.style.display = 'none';
+                
+                if (!brief.sections || brief.sections.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+                
+                renderBrief(brief);
+            } catch (error) {
+                loading.style.display = 'none';
+                empty.style.display = 'block';
+                console.error('加载失败:', error);
+            }
+        }
+
+        function renderBrief(brief) {
+            document.getElementById('brief-title').textContent = brief.title || 'AI NewsRSS 日报';
+            
+            const date = new Date(brief.date + 'T00:00:00');
+            const formattedDate = date.toLocaleDateString('zh-CN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long' 
+            });
+            document.getElementById('brief-meta').textContent = 
+                `${formattedDate} · 精选到 ${brief.total_count || 0} 条 AI 资讯`;
+
+            // Audio Player
+            const audioContainer = document.getElementById('audio-container');
+            if (brief.audio_path) {
+                audioContainer.innerHTML = `
+                    <div class="audio-card">
+                        <div class="audio-header">
+                            <div class="audio-icon">🎧</div>
+                            <div class="audio-info">
+                                <h3>语音播报</h3>
+                                <p>边听边了解，通勤路上也能掌握AI动态</p>
+                            </div>
+                        </div>
+                        
+                        <div class="audio-controls">
+                            <span class="time-display" id="current-time">0:00</span>
+                            <div class="progress-container">
+                                <input 
+                                    type="range" 
+                                    class="progress-bar" 
+                                    id="progress-bar"
+                                    value="0" 
+                                    max="100" 
+                                />
+                            </div>
+                            <span class="time-display" id="duration-time">0:00</span>
+                        </div>
+                        
+                        <div class="player-buttons">
+                            <div class="player-buttons-left">
+                                <button class="control-btn play-pause" id="play-pause-btn" onclick="togglePlay()">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </button>
+                                
+                                <button class="control-btn skip" onclick="skip(-15)" title="后退15秒">-15</button>
+                                <button class="control-btn skip" onclick="skip(15)" title="前进15秒">+15</button>
+                            </div>
+                            
+                            <div class="speed-controls">
+                                <span class="speed-label">速度:</span>
+                                <button class="speed-btn" onclick="setSpeed(0.75)">0.75x</button>
+                                <button class="speed-btn active" onclick="setSpeed(1.0)">1.0x</button>
+                                <button class="speed-btn" onclick="setSpeed(1.25)">1.25x</button>
+                                <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                                <button class="speed-btn" onclick="setSpeed(2.0)">2.0x</button>
+                            </div>
+                        </div>
+                        
+                        <audio id="audio-element" style="display: none;">
+                            <source src="${brief.audio_path}" type="audio/mpeg">
+                        </audio>
+                    </div>
+                `;
+                initAudioPlayer();
+            }
+
+            // Summary
+            const summaryContainer = document.getElementById('summary-container');
+            if (brief.summary) {
+                summaryContainer.innerHTML = `
+                    <div class="summary-card">
+                        <p>${brief.summary}</p>
+                    </div>
+                `;
+            }
+
+            // Sections
+            const content = document.getElementById('content');
+            brief.sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+                
+                let sectionHTML = `
+                    <div class="section-header">
+                        <div class="section-title-row">
+                            <h2 class="section-title">
+                                <span>${section.topic_icon}</span>
+                                ${section.topic_name}
+                            </h2>
+                            <span class="section-count">${section.count} 条</span>
+                        </div>
+                        <p class="section-desc">${section.topic_description}</p>
+                    </div>
+                `;
+                
+                section.items.forEach(item => {
+                    const publishedDate = new Date(item.published_at * 1000);
+                    const timeAgo = formatTimeAgo(publishedDate);
+                    
+                    sectionHTML += `
+                        <div class="news-item">
+                            <div class="news-meta">
+                                <span>${item.source}</span>
+                                <span>·</span>
+                                <span>${timeAgo}</span>
+                                <span>·</span>
+                                <span class="news-score">评分 ${(item.score || 0).toFixed(1)}</span>
+                            </div>
+                            <h3 class="news-title">
+                                <a href="${item.url}" target="_blank">${item.title}</a>
+                            </h3>
+                            <p class="news-summary">${item.summary}</p>
+                            <div class="news-footer">
+                                <span></span>
+                                <a href="${item.url}" target="_blank" class="news-link">查看详情 →</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                sectionDiv.innerHTML = sectionHTML;
+                content.appendChild(sectionDiv);
+            });
+        }
+
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diff = now.getTime() - date.getTime();
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            
+            if (hours < 1) return '刚刚';
+            if (hours < 24) return `${hours} 小时前`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days} 天前`;
+            return date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+        }
+
+        // Audio Player Functions
+        function initAudioPlayer() {
+            audioElement = document.getElementById('audio-element');
+            if (!audioElement) return;
+
+            audioElement.addEventListener('loadedmetadata', () => {
+                duration = audioElement.duration;
+                document.getElementById('duration-time').textContent = formatTime(duration);
+                document.getElementById('progress-bar').max = duration;
+            });
+
+            audioElement.addEventListener('timeupdate', () => {
+                currentTime = audioElement.currentTime;
+                document.getElementById('current-time').textContent = formatTime(currentTime);
+                document.getElementById('progress-bar').value = currentTime;
+            });
+
+            audioElement.addEventListener('ended', () => {
+                isPlaying = false;
+                updatePlayButton();
+                currentTime = 0;
+            });
+
+            audioElement.addEventListener('play', () => {
+                isPlaying = true;
+                updatePlayButton();
+            });
+
+            audioElement.addEventListener('pause', () => {
+                isPlaying = false;
+                updatePlayButton();
+            });
+
+            document.getElementById('progress-bar').addEventListener('input', (e) => {
+                audioElement.currentTime = parseFloat(e.target.value);
+            });
+        }
+
+        function togglePlay() {
+            if (!audioElement) return;
+            if (isPlaying) {
+                audioElement.pause();
+            } else {
+                audioElement.play();
+            }
+        }
+
+        function skip(seconds) {
+            if (!audioElement) return;
+            audioElement.currentTime = Math.max(0, Math.min(duration, currentTime + seconds));
+        }
+
+        function setSpeed(speed) {
+            if (!audioElement) return;
+            playbackSpeed = speed;
+            audioElement.playbackRate = speed;
+            
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function updatePlayButton() {
+            const btn = document.getElementById('play-pause-btn');
+            if (!btn) return;
+            
+            if (isPlaying) {
+                btn.innerHTML = `
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                `;
+            } else {
+                btn.innerHTML = `
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Load on page load
+        loadDailyBrief();
+    </script>
+</body>
+</html>
