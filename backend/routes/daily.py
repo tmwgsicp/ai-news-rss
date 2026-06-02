@@ -18,9 +18,7 @@ router = APIRouter()
 
 @router.get("/api/daily/latest")
 async def get_latest_brief():
-    """
-    获取最新日报
-    """
+    """获取最新日报"""
     try:
         async with async_session() as db:
             result = await db.execute(
@@ -43,11 +41,37 @@ async def get_latest_brief():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/api/daily/list")
+async def list_briefs(
+    limit: int = Query(10, ge=1, le=30, description="返回数量"),
+    offset: int = Query(0, ge=0, description="偏移量")
+):
+    """获取日报列表"""
+    try:
+        async with async_session() as db:
+            result = await db.execute(
+                select(DailyBrief)
+                .order_by(DailyBrief.date.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+            briefs = result.scalars().all()
+            
+            return {
+                "items": [brief.to_dict() for brief in briefs],
+                "total": len(briefs)
+            }
+    
+    except Exception as e:
+        logger.error(f"获取日报列表失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/api/daily/{date}")
 async def get_brief_by_date(date: str):
     """
     获取指定日期的日报
-    
+
     Args:
         date: 日期，格式 YYYY-MM-DD
     """
@@ -70,46 +94,17 @@ async def get_brief_by_date(date: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/api/daily/list")
-async def list_briefs(
-    limit: int = Query(10, ge=1, le=30, description="返回数量"),
-    offset: int = Query(0, ge=0, description="偏移量")
-):
-    """
-    获取日报列表
-    """
-    try:
-        async with async_session() as db:
-            result = await db.execute(
-                select(DailyBrief)
-                .order_by(DailyBrief.date.desc())
-                .limit(limit)
-                .offset(offset)
-            )
-            briefs = result.scalars().all()
-            
-            return {
-                "items": [brief.to_dict() for brief in briefs],
-                "total": len(briefs)
-            }
-    
-    except Exception as e:
-        logger.error(f"获取日报列表失败: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.get("/api/daily/audio/{date}.mp3")
 async def get_daily_audio(date: str):
     """
     获取日报音频文件
-    
+
     Args:
         date: 日期，格式 YYYY-MM-DD
     """
     from fastapi.responses import FileResponse
     from pathlib import Path
     
-    # 转换日期格式
     date_filename = date.replace('-', '')
     audio_file = Path("data/audio") / f"daily_brief_{date_filename}.mp3"
     
